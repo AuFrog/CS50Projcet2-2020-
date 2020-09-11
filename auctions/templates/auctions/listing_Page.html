@@ -1,0 +1,242 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block script %}
+<script type="text/javascript">
+
+    function next() {
+
+        {% if page_obj.has_next %}
+            page = {{ page_obj.next_page_number }};
+        {% endif %}
+
+        $.ajaxSetup({ headers: { "X-CSRFToken": '{{csrf_token}}' } });
+
+        $.ajax({
+            type: "POST",
+            url: "{% url 'listing_Page' l.item_id %}",
+            data: { "page": page },
+            success: function (data) {
+                $("body").html(data);
+                // $("#page-btn").load(" #page-btn");//Must have a space before the # !!!!!!!!!!               
+           
+            },
+
+            complete: function() {
+                $("#dsp-block").hide();
+                $("#cmt-block").show();
+                document.getElementById("cmt-link").setAttribute("class", "nav-link active");
+                document.getElementById("dsp-link").setAttribute("class", "nav-link");
+            }
+
+        })
+
+    }
+
+
+
+    function pre() {
+        {% if page_obj.has_previous %}
+            page = {{ page_obj.previous_page_number }};
+        {% endif %}
+
+        $.ajaxSetup({ headers: { "X-CSRFToken": '{{csrf_token}}' } });
+
+        $.ajax({
+            type: "POST",
+            url: "{% url 'listing_Page' l.item_id %}",
+            data: { "page": page },
+            success: function (data) {
+                $("body").html(data);
+            },
+            complete: function() {
+                $("#dsp-block").hide();
+                $("#cmt-block").show();
+                document.getElementById("cmt-link").setAttribute("class", "nav-link active");
+                document.getElementById("dsp-link").setAttribute("class", "nav-link");
+            }
+        })
+
+        
+  
+            
+    }
+
+    $(document).ready(function(){
+        $("#cmt").click(function(){
+            $("#dsp-block").hide();
+            $("#cmt-block").show();
+            document.getElementById("cmt-link").setAttribute("class", "nav-link active");
+            document.getElementById("dsp-link").setAttribute("class", "nav-link");
+        });
+    });
+
+    $(document).ready(function(){
+        $("#dsp").click(function(){
+            $("#cmt-block").hide();
+            $("#dsp-block").show();
+            document.getElementById("dsp-link").setAttribute("class", "nav-link active");
+            document.getElementById("cmt-link").setAttribute("class", "nav-link");
+        });
+    });
+
+
+</script>
+{% endblock %}
+
+
+{% block body %}
+
+<div class="box-row">
+    <div ><img src="{{l.item_URL}}" class="img"></div>
+
+    <div  class="" >
+        {% if message %}
+        {{message}}
+        {% endif %}
+
+        <div class="box-row-sm">
+            <span class="title">{{l.item_id}}. {{l.item_Name}}</span>
+
+            {% if user == l.item_Owner and l.item_isActive == True %}                
+            <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="CL">
+                {% csrf_token %}
+            </form>
+            <button form="CL" type="submit" name="closed" class="margin-l-10 btn btn-light">
+                <span class="badge badge-dange">Close the Listing</span>
+            </button>
+            {% endif %}
+
+        </div>
+
+
+       
+        <div class="box-row-sm">
+            <span>The current Price is:</span>
+            {% if l.bidNo == 0 %}
+            <span class="price margin-l-10">{{l.item_StarBid}}</span>
+            {% else %}
+            <span class="price margin-l-10">{{l.currentPrice}}</span>
+            {% endif %}
+            
+        </div>
+
+        <div>
+             <small>There are {{l.bidNo}} bid(s) for this listing</small>
+        </div>
+       
+
+        <br>
+       
+        {% if l.item_isActive == True%}
+        <div class="box-row-sm">
+        <span>entry</span>
+            <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="BF" class="margin-l-10">
+                {% csrf_token %}
+                {{form_Bid}}
+            </form>
+        </div>
+        <br>
+        {% endif %}
+
+        {% if user.is_authenticated and l.item_isActive == True  %}
+        <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="WL">
+            {% csrf_token %}
+            <input value="{{l.item_id}}" name="item_id" type="hidden">
+        </form>
+        <div>
+            <button form='BF' type="submit" name="bid" class="btn btn-outline-success"><a>Add Your Bid</a></button>
+            <button form='WL' type="submit" name="watch" class="margin-l-10 btn btn-outline-info"><a>Add to Watchlist</a></button>
+        </div>
+        {% elif l.item_isActive == True%}
+        <button class="disabled btn btn-outline-secondary">Log in to Bid</button>
+
+        {% elif user == l.item_Winner and l.item_isActive == False %}
+        <p>You won the listing</p>
+
+        {% endif %}<!--user.is_authenticated and l.item_isActive-->
+
+    </div><!--info-->
+    
+</div>
+<br>
+
+
+
+
+<div>
+<ul class="nav nav-tabs tab" >
+    <li class="nav-item" id="dsp">
+        <a class="nav-link" href="#" id="dsp-link">Description</a>
+    </li>
+    <li class="nav-item" id="cmt">
+        <a class="nav-link" href="#" id="cmt-link">Comment</a>
+    </li>
+</ul>
+</div>
+
+<div class="box-column">
+
+
+    <!--******************Description*******************************-->
+    <div id="dsp-block">
+        <p>{{l.item_Description}}</p>
+    </div>
+    <!--******************Description End*******************************-->
+
+
+
+
+    <!--******************comment area******************************-->
+    <div class="box-column" id="cmt-block" >
+
+        <div class="box-column">       
+            {% for p in page_obj %}
+            <h5>{{p.com_Title}}</h5>
+            <p>{{p.com_Contents}}</p>
+            <br>
+            {% endfor %}
+        </div>
+        
+        <!-- <div id="page-btn"> -->
+        <ul class="pagination" >
+            {% if page_obj.has_previous %}
+            <li class="page-item btn">
+                <a class="page-link" onclick='pre()' href="javascript:void(0)">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled btn"><span class="page-link">previous</span></li>
+            {% endif %}
+
+            <li class="page-item btn">
+                <!-- Page {{ page_obj.number}} of {{page_obj.paginator.num_pages}} -->
+                {{page_obj}}
+            </li>
+        
+        
+            {% if page_obj.has_next %}
+            <li class="page-item btn">
+                <a class="page-link" onclick="next()" href="javascript:void(0)">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled btn"><span class="page-link">next</span></li>
+            {% endif %}
+        </ul>
+        <!-- </div> -->
+
+        {% if user.is_authenticated and l.item_isActive == True  %}
+        <div>
+
+            <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="CM">
+                {% csrf_token %}
+                {{form_Comment|crispy}}
+            </form>  
+        </div>
+        <button form="CM" type="submit" name="com" class="btn btn-outline-success">Submit</button>
+        {% endif %}
+    </div>
+    <!--******************comment area******************************-->
+
+</div>
+ 
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+{% if user.is_authenticated %}
+    <h6>Your watchlist</h6>
+    {% for l in watched %}
+
+    <div class="box-row-left">   
+        <div class="box-img"><img src="{{l.item_URL}}"></div>
+        <div>        
+            <a href="{% url 'listing_Page' l.item_id %}"><h5>{{l}}</h5></a>  
+
+            <div class="box-row-sm">
+                <span>The current Price is:</span>
+                {% if l.bidNo == 0 %}
+                <span class="price margin-l-10">{{l.item_StarBid}}</span>
+                {% else %}
+                <span class="price margin-l-10">{{l.currentPrice}}</span>
+                {% endif %}    
+            </div>
+
+            <div>
+                <small>There are {{l.bidNo}} bid(s) for this listing</small>
+           </div>
+            <br>
+           <button form='WL' type="submit" class="btn btn-outline-success"><a>Remove from watchlist</a></button>
+   
+        </div>
+    </div>
+
+    <form action="{% url 'watchlist' %}" method="POST" id="WL">
+        {% csrf_token %}
+        <input value="{{l.item_id}}" name="item_id" type="hidden">
+    </form>
+
+
+    <hr>
+    {% endfor %}
+  
+
+    {% else %}
+        <h6>Please sign in.</h6>
+    {% endif %}
+
+
+{% endblock %}
