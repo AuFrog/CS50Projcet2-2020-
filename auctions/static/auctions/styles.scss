@@ -11,6 +11,22 @@ hr {
     margin-bottom: 30px;
 }
 
+.bdg-close{
+    font-size: 100%;
+    color:  #d91615;
+}
+
+.bid-end{
+    background-color: #F3F3F3;
+    
+    font-size: 16px;
+    color: #000;
+    margin-top: 0;
+    margin-bottom: 2px;
+    text-align: center;
+    font-weight: 600;
+}
+
 .box-centre{
     display: flex;
     align-items: center;
@@ -22,6 +38,7 @@ hr {
     flex-direction: column;
     align-items: center;
 }
+
 
 .box-row{
     display: flex;

@@ -132,7 +132,10 @@ def listing_Page(request, item_id):
     page_obj=paginator.get_page(1)
     
     if request.method=="POST":
+
+        # print(request.POST)
        
+
         if "bid" in request.POST :
 
             temp_bid=BidForm(request.POST)
@@ -181,28 +184,12 @@ def listing_Page(request, item_id):
                 "watched":request.user.user_Watchlist.all()
             })
 
-        elif "com" in request.POST:
-
-            temp_com=CommentForm(request.POST)
-            if temp_com.is_valid():
-                c=Comment(com_User=request.user, com_Listing=Listing.objects.get(pk=item_id), 
-                com_Title=temp_com.cleaned_data["com_Title"], com_Contents=temp_com.cleaned_data["com_Contents"] ,)
-                c.save()
-
-            temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
-            return render(request,"auctions/listing_Page.html",{
-                "l":temp_l,
-                "form_Bid":BidForm, 
-                "page_obj":page_obj,
-                "form_Comment":CommentForm,
-             })
-            
-            
-
-        else:
+        
+        # elif request.POST['action'] == 'p':// for use 'action' in ajax post
+        elif "p" in request.POST:
             page=request.POST.get("page")
 
-            # print(page)
+            # print("page")
             try:
                 page_obj = paginator.page(page)
             except PageNotAnInteger:
@@ -217,10 +204,36 @@ def listing_Page(request, item_id):
                 "page_obj":page_obj,
                 "form_Comment":CommentForm,
             })
-    
-
             # data=serializers.serialize('json', page_obj)
             # return HttpResponse(data,content_type="application/json")
+        
+        
+        elif "com" in request.POST:
+            # print("go to comment")
+            temp_com=CommentForm(request.POST)
+            if temp_com.is_valid():
+                # print(temp_com)
+                c=Comment(com_User=request.user, com_Listing=Listing.objects.get(pk=item_id), 
+                com_Title=temp_com.cleaned_data["com_Title"], com_Contents=temp_com.cleaned_data["com_Contents"] ,)
+                c.save()
+
+            
+            temp_comment=Comment.objects.filter(com_Listing=item_id).order_by("com_id")
+            paginator = Paginator(temp_comment, 2)
+            page_obj=paginator.get_page(paginator.num_pages)
+            temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
+            return render(request,"auctions/listing_Page.html",{
+                "l":temp_l,
+                "form_Bid":BidForm, 
+                "page_obj":page_obj,
+                "form_Comment":CommentForm,
+             })
+
+        # ************for more post request****************#
+        else:
+            pass 
+
+            
 
 
     else:
@@ -234,12 +247,15 @@ def listing_Page(request, item_id):
         })
 
 
+
 def watchlist(request):
     if request.method=="POST":
-        temp_item=Listing.objects.get(pk=int(request.POST["item_id"]))
+        # print(request.POST)
+        temp_item=Listing.objects.get(pk=int(request.POST.get("item_id")))
         request.user.user_Watchlist.remove(temp_item)
+        watched=request.user.user_Watchlist.all().annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids"))
         return render(request,"auctions/watchlist.html",{
-            "watched":request.user.user_Watchlist.all()
+            "watched":watched,
         })
 
     

@@ -15,7 +15,10 @@
         $.ajax({
             type: "POST",
             url: "{% url 'listing_Page' l.item_id %}",
-            data: { "page": page },
+            data: { "page": page, 
+                    // action:"p"// use 'action' also ok
+                    "p":"",
+            },
             success: function (data) {
                 $("body").html(data);
                 // $("#page-btn").load(" #page-btn");//Must have a space before the # !!!!!!!!!!               
@@ -33,8 +36,6 @@
 
     }
 
-
-
     function pre() {
         {% if page_obj.has_previous %}
             page = {{ page_obj.previous_page_number }};
@@ -45,7 +46,7 @@
         $.ajax({
             type: "POST",
             url: "{% url 'listing_Page' l.item_id %}",
-            data: { "page": page },
+            data: { "page": page, "p":"",},
             success: function (data) {
                 $("body").html(data);
             },
@@ -57,10 +58,40 @@
             }
         })
 
-        
-  
-            
     }
+
+    $(document).ready(function(){
+        $("#bt").click(function() {
+
+            $.ajaxSetup({ headers: { "X-CSRFToken": '{{csrf_token}}' } });
+            // console.log($("#CM").serialize())
+
+            var d=($("#CM").serialize() +"&com=")
+            console.log(d)
+            $.ajax({
+                type: "POST",
+                url: "{% url 'listing_Page' l.item_id %}",
+                // data: $("#CM").serialize(),
+                data: d,   
+                
+                success: function (data) {
+                    $("body").html(data);
+                    // console.log(1111111);
+                },
+                complete: function() {
+                    $("#dsp-block").hide();
+                    $("#cmt-block").show();
+                    document.getElementById("cmt-link").setAttribute("class", "nav-link active");
+                    document.getElementById("dsp-link").setAttribute("class", "nav-link");
+                    // console.log(22222);
+                }
+            })
+
+        });
+    });
+    
+
+
 
     $(document).ready(function(){
         $("#cmt").click(function(){
@@ -90,7 +121,8 @@
 <div class="box-row">
     <div ><img src="{{l.item_URL}}" class="img"></div>
 
-    <div  class="" >
+    <div  class="box-column" >
+
         {% if message %}
         {{message}}
         {% endif %}
@@ -99,12 +131,15 @@
             <span class="title">{{l.item_id}}. {{l.item_Name}}</span>
 
             {% if user == l.item_Owner and l.item_isActive == True %}                
-            <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="CL">
+            <form action="{% url 'listing_Page' l.item_id %}" method="POST">
                 {% csrf_token %}
+            
+                <button type="submit" name="closed" class="margin-l-10 btn btn-outline-danger">
+                   Close the Listing
+                </button>
+
             </form>
-            <button form="CL" type="submit" name="closed" class="margin-l-10 btn btn-light">
-                <span class="badge badge-dange">Close the Listing</span>
-            </button>
+
             {% endif %}
 
         </div>
@@ -121,14 +156,14 @@
             
         </div>
 
-        <div>
+
+        {% if l.item_isActive == True%}
+        <div class="box-row-sm">
              <small>There are {{l.bidNo}} bid(s) for this listing</small>
         </div>
        
-
         <br>
        
-        {% if l.item_isActive == True%}
         <div class="box-row-sm">
         <span>entry</span>
             <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="BF" class="margin-l-10">
@@ -137,26 +172,34 @@
             </form>
         </div>
         <br>
+        
+
+            {% if user.is_authenticated %}
+            <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="WL">
+                {% csrf_token %}
+                <input value="{{l.item_id}}" name="item_id" type="hidden">
+            </form>
+            <div>
+                <button form='BF' type="submit" name="bid" class="btn btn-outline-success"><a>Add Your Bid</a></button>
+                <button form='WL' type="submit" name="watch" class="margin-l-10 btn btn-outline-info"><a>Add to Watchlist</a></button>
+            </div>
+
+            {% else %}
+            <button class="disabled btn btn-outline-secondary">Log in to Bid</button>
+            {% endif %} 
+
+     
+        {% else %}
+        <div class="bid-end"></div>
+            <p>The auction has ended</p>
+            {% if user == l.item_Winner %}       
+            <p>You won the listing</p>
+            {% endif %}
+        </div>
+
         {% endif %}
 
-        {% if user.is_authenticated and l.item_isActive == True  %}
-        <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="WL">
-            {% csrf_token %}
-            <input value="{{l.item_id}}" name="item_id" type="hidden">
-        </form>
-        <div>
-            <button form='BF' type="submit" name="bid" class="btn btn-outline-success"><a>Add Your Bid</a></button>
-            <button form='WL' type="submit" name="watch" class="margin-l-10 btn btn-outline-info"><a>Add to Watchlist</a></button>
-        </div>
-        {% elif l.item_isActive == True%}
-        <button class="disabled btn btn-outline-secondary">Log in to Bid</button>
-
-        {% elif user == l.item_Winner and l.item_isActive == False %}
-        <p>You won the listing</p>
-
-        {% endif %}<!--user.is_authenticated and l.item_isActive-->
-
-    </div><!--info-->
+    </div>
     
 </div>
 <br>
@@ -166,8 +209,8 @@
 
 <div>
 <ul class="nav nav-tabs tab" >
-    <li class="nav-item" id="dsp">
-        <a class="nav-link" href="#" id="dsp-link">Description</a>
+    <li class="nav-item " id="dsp">
+        <a class="nav-link active" href="#" id="dsp-link">Description</a>
     </li>
     <li class="nav-item" id="cmt">
         <a class="nav-link" href="#" id="cmt-link">Comment</a>
@@ -226,13 +269,15 @@
 
         {% if user.is_authenticated and l.item_isActive == True  %}
         <div>
-
-            <form action="{% url 'listing_Page' l.item_id %}" method="POST" id="CM">
+            <form method="POST" id="CM">
                 {% csrf_token %}
                 {{form_Comment|crispy}}
             </form>  
         </div>
-        <button form="CM" type="submit" name="com" class="btn btn-outline-success">Submit</button>
+
+        <button form="CM" type="button" name="com" class="btn btn-outline-success" id="bt" value="com">Submit</button>
+       
+   
         {% endif %}
     </div>
     <!--******************comment area******************************-->

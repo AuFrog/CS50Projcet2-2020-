@@ -8,7 +8,7 @@
 
     <div class="box-row-left">   
         <div class="box-img"><img src="{{l.item_URL}}"></div>
-        <div>        
+        <div class="box-column">        
             <a href="{% url 'listing_Page' l.item_id %}"><h5>{{l}}</h5></a>  
 
             <div class="box-row-sm">
@@ -20,20 +20,24 @@
                 {% endif %}    
             </div>
 
-            <div>
+            <div class="box-row-sm">
                 <small>There are {{l.bidNo}} bid(s) for this listing</small>
            </div>
             <br>
-           <button form='WL' type="submit" class="btn btn-outline-success"><a>Remove from watchlist</a></button>
+        
+        <div>
+        <form action="{% url 'watchlist' %}" method="POST" id="WL">
+            {% csrf_token %}
+            <input value="{{l.item_id}}" name="item_id" type="hidden" >
+            <button type="submit" class="btn btn-outline-success">Remove from watchlist</button>
+        </form>
+        </div>
    
         </div>
+    
+
+        
     </div>
-
-    <form action="{% url 'watchlist' %}" method="POST" id="WL">
-        {% csrf_token %}
-        <input value="{{l.item_id}}" name="item_id" type="hidden">
-    </form>
-
 
     <hr>
     {% endfor %}
