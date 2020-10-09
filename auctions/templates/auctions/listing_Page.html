@@ -119,7 +119,7 @@
 {% block body %}
 
 <div class="box-row">
-    <div ><img src="{{l.item_URL}}" class="img"></div>
+    <div class="box-img-lg"><img src="{{l.item_URL}}" class="img"></div>
 
     <div  class="box-column" >
 
@@ -181,7 +181,11 @@
             </form>
             <div>
                 <button form='BF' type="submit" name="bid" class="btn btn-outline-success"><a>Add Your Bid</a></button>
+                {% if wted %}
+                <button form='WL' type="submit" name="unwatch" class="margin-l-10 btn btn-outline-info"><a>Remove from Watchlist</a></button>
+                {% else %}
                 <button form='WL' type="submit" name="watch" class="margin-l-10 btn btn-outline-info"><a>Add to Watchlist</a></button>
+                {% endif %}
             </div>
 
             {% else %}
@@ -190,7 +194,7 @@
 
      
         {% else %}
-        <div class="bid-end"></div>
+        <div class="bid-end box-centre box-column">
             <p>The auction has ended</p>
             {% if user == l.item_Winner %}       
             <p>You won the listing</p>

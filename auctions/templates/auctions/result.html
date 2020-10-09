@@ -2,9 +2,10 @@
 
 {% block body %}
 
-{% if user.is_authenticated %}
-<div class="box-centre"><h2>Your watchlist</h2></div>
-    {% for l in watched %}
+
+    <div class="box-centre"><h2>Listing in {{category}}</h2></div>
+    
+    {% for l in l_result %}
 
     <div class="box-row-left">   
         <div class="box-img"><img src="{{l.item_URL}}"></div>
@@ -25,14 +26,6 @@
            </div>
             <br>
         
-        <div>
-        <form action="{% url 'watchlist' %}" method="POST" id="WL">
-            {% csrf_token %}
-            <input value="{{l.item_id}}" name="item_id" type="hidden" >
-            <button type="submit" class="btn btn-outline-success">Remove from watchlist</button>
-        </form>
-        </div>
-   
         </div>
     
 
@@ -41,11 +34,7 @@
 
     <hr>
     {% endfor %}
-  
 
-    {% else %}
-        <h6>Please sign in.</h6>
-    {% endif %}
 
 
 {% endblock %}

@@ -1,0 +1,15 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<div>
+    {% for c in ctgory %}
+    <ul>
+        <li><a href="{% url 'result' c %}">{{c}}</a></li>
+    </ul>
+    {% endfor %}
+</div>    
+
+
+
+{% endblock %}

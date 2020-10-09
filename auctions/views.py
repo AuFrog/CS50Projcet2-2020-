@@ -14,7 +14,7 @@ from .models import User, Listing, Bid, Comment
 
 
 
-Categories=["Electronics","Fashion","Hone","Toys"]
+Categories=["Electronics","Fashion","Home","Toys"]
 
 
 class BidForm(forms.Form):
@@ -130,6 +130,20 @@ def listing_Page(request, item_id):
     temp_comment=Comment.objects.filter(com_Listing=item_id).order_by("com_id")
     paginator = Paginator(temp_comment, 2)
     page_obj=paginator.get_page(1)
+
+
+
+    # print (request.user.user_Watchlist.filter(item_id__exact=item_id))
+    if request.user.user_Watchlist.filter(item_id__exact=item_id).exists():  
+        watched=True
+    else:
+        watched=False
+
+
+
+    message=""
+
+
     
     if request.method=="POST":
 
@@ -147,35 +161,36 @@ def listing_Page(request, item_id):
 
                 if(temp_bid < sB and not cB.exists()) :
                     message="You bid must at least as large as the starting bid"
-                elif (cB.exists() and temp_bid < cB.last().bid_Bids):
+                elif (cB.exists() and temp_bid <= cB.last().bid_Bids):
                     message="You bid must greater then the current price"
                 else:
                     b=Bid(bid_Bids=temp_bid, bid_User=request.user, bid_Listing=Listing.objects.get(pk=item_id))
                     b.save()
                     message="Successful bidding"
                     
-                temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
-                return render(request,"auctions/listing_Page.html",{
-                    "l":temp_l,
-                    "form_Bid":BidForm,
-                    "message":message,
-                    "page_obj":page_obj,
-                    "form_Comment":CommentForm,
-                })
+                # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
+                # return render(request,"auctions/listing_Page.html",{
+                #     "l":temp_l,
+                #     "form_Bid":BidForm,
+                #     "message":message,
+                #     "page_obj":page_obj,
+                #     "form_Comment":CommentForm,
+                # })
 
         elif "closed" in request.POST:
 
             Listing.objects.filter(pk=item_id).update(item_isActive=False)
             Listing.objects.filter(pk=item_id).update(item_Winner=Bid.objects.filter(bid_Listing=item_id).last().bid_User)
-            temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
             message="You listing has beed closed."
-            return render(request,"auctions/listing_Page.html",{
-                "l":temp_l,
-                "form_Bid":BidForm,
-                "message":message,
-                "page_obj":page_obj,
-                 "form_Comment":CommentForm,
-            })
+            
+            # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)  
+            # return render(request,"auctions/listing_Page.html",{
+            #     "l":temp_l,
+            #     "form_Bid":BidForm,
+            #     "message":message,
+            #     "page_obj":page_obj,
+            #      "form_Comment":CommentForm,
+            # })
 
         elif "watch" in request.POST:
             request.user.user_Watchlist.add(Listing.objects.get(pk=item_id))
@@ -184,7 +199,11 @@ def listing_Page(request, item_id):
                 "watched":request.user.user_Watchlist.all()
             })
 
-        
+        elif "unwatch" in request.POST:
+            request.user.user_Watchlist.remove(Listing.objects.get(pk=item_id))
+            watched=False
+
+   
         # elif request.POST['action'] == 'p':// for use 'action' in ajax post
         elif "p" in request.POST:
             page=request.POST.get("page")
@@ -197,13 +216,15 @@ def listing_Page(request, item_id):
             except EmptyPage:
                 page_obj = paginator.page(paginator.num_pages)
 
-            temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
-            return render(request,"auctions/listing_Page.html",{
-                "l":temp_l,
-                "form_Bid":BidForm,
-                "page_obj":page_obj,
-                "form_Comment":CommentForm,
-            })
+            # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
+            # return render(request,"auctions/listing_Page.html",{
+            #     "l":temp_l,
+            #     "form_Bid":BidForm,
+            #     "page_obj":page_obj,
+            #     "form_Comment":CommentForm,
+            # })
+
+
             # data=serializers.serialize('json', page_obj)
             # return HttpResponse(data,content_type="application/json")
         
@@ -221,21 +242,31 @@ def listing_Page(request, item_id):
             temp_comment=Comment.objects.filter(com_Listing=item_id).order_by("com_id")
             paginator = Paginator(temp_comment, 2)
             page_obj=paginator.get_page(paginator.num_pages)
-            temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
-            return render(request,"auctions/listing_Page.html",{
-                "l":temp_l,
-                "form_Bid":BidForm, 
-                "page_obj":page_obj,
-                "form_Comment":CommentForm,
-             })
+            # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
+            # return render(request,"auctions/listing_Page.html",{
+            #     "l":temp_l,
+            #     "form_Bid":BidForm, 
+            #     "page_obj":page_obj,
+            #     "form_Comment":CommentForm,
+            #  })
 
         # ************for more post request****************#
         else:
-            pass 
+           pass 
 
+    
+        temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
+        return render(request,"auctions/listing_Page.html",{
+                "l":temp_l,
+                "form_Bid":BidForm,
+                "message":message,
+                "page_obj":page_obj,
+                "form_Comment":CommentForm,
+                "wted":watched,
+            })
+
+    
             
-
-
     else:
         
         temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
@@ -244,6 +275,7 @@ def listing_Page(request, item_id):
             "form_Bid":BidForm,
             "page_obj":page_obj,
             "form_Comment":CommentForm,
+            "wted":watched,
         })
 
 
@@ -265,3 +297,24 @@ def watchlist(request):
         return render(request,"auctions/watchlist.html",{
             "watched":watched,
         })
+
+
+
+
+def category(request):
+
+    return render(request, "auctions/category.html",{
+        "ctgory":Categories,
+    })
+
+
+
+def result(request,category):
+    # l_result=Listing.objects.filter(item_Category=category)
+    temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).filter(item_Category=category)
+        
+    return render(request,"auctions/result.html",{
+        "category":category,
+        "l_result":temp_l,
+    })
+    

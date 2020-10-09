@@ -1,7 +1,10 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
+<div class="box-column">
+    <br>
     <h2>Create Listing</h2>
+    <br>
 
     {%if message%}
         <h4>{{message}}</h4>
@@ -31,9 +34,10 @@
             {% endfor %}
         </select>
         <br><br>
-        <br><br>
-        <input type="submit" value="Save">
+        <div class="box-centre">
+            <button type="submit" value="Save" class="btn btn-outline-success">Save</button>
+        </div>
     </form>
 
-
+</div>
 {% endblock %}

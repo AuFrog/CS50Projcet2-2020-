@@ -17,15 +17,14 @@ hr {
 
 .bid-end {
   background-color: #F3F3F3;
-  font-size: 16px;
+  font-size: 18px;
   color: #000;
-  margin-top: 0;
-  margin-bottom: 2px;
-  text-align: center;
-  font-weight: 600;
+  font-weight: 650;
+  width: 280px;
+  height: 180px;
 }
 
-.box-centre, .box-img, .box-row-sm {
+.box-centre, .box-img-lg, .box-img, .box-row-sm {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,9 +59,16 @@ hr {
   background: #FFFAFA;
 }
 
-img {
+.box-img-lg {
   margin-right: 20px;
   width: 350px;
+  height: 400px;
+  background: #FFFAFA;
+}
+
+img {
+  margin-right: 20px;
+  width: 100%;
 }
 
 .price {

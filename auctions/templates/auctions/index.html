@@ -1,30 +1,17 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+    <div class="box-centre"><h2>Active Listings</h2></div>
 
-<!--     
-    {% for list in lists %}
-        <div>
-            <a href="{% url 'listing_Page' list.item_id %}"><h5>{{list}}</h5></a>
-            <img src="{{list.item_URL}}">
-            <p>{{list.item_Description}}</p>
-            {% if list.bidNo == 0 %}
-            <p>The current Price is: {{list.item_StarBid}}</p> 
-            {% else %}
-            <p>The current Price is: {{list.currentPrice}}</p> 
-            {% endif %}
-   
-            <hr>
-        </div>           
-    {% endfor %} -->
+
 
     {% for list in page_obj %}
     <div class="box-row-left">
         <div class="box-img"><img src="{{list.item_URL}}"></div>
         <div class="info">
             <a href="{% url 'listing_Page' list.item_id %}"><h5>{{list}}</h5></a>       
-            
+            <p>{{list.item_Description}}</p>
+            <br>
             {% if list.bidNo == 0 %}
             <p>The current Price is: {{list.item_StarBid}}</p> 
             {% else %}
@@ -32,12 +19,12 @@
             {% endif %}
 
             <p>There are {{list.bidNo}} bid(s)</p>
-        </div><!--info-->
-    </div><!--box-->
+        </div>
+    </div>
     <hr>
     {% endfor %}
 
-<div class="pagination">
+<div class="pagination box-centre">
     <span class="step-links">
         {% if page_obj.has_previous %}
             <a href="?page=1">&laquo; first</a>
