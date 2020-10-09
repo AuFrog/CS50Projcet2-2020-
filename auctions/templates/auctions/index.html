@@ -10,13 +10,23 @@
         <div class="box-img"><img src="{{list.item_URL}}"></div>
         <div class="info">
             <a href="{% url 'listing_Page' list.item_id %}"><h5>{{list}}</h5></a>       
-            <p>{{list.item_Description}}</p>
-            <br>
+            <p><b>Description:&nbsp&nbsp </b>{{list.item_Description}}</p>
+            <!-- <br> -->
+<!--             
             {% if list.bidNo == 0 %}
             <p>The current Price is: {{list.item_StarBid}}</p> 
             {% else %}
             <p>The current Price is: {{list.currentPrice}}</p> 
-            {% endif %}
+            {% endif %} -->
+
+            <!-- <div class="box-row-sm"> -->
+                <span>The current Price is:</span>
+                {% if list.bidNo == 0 %}
+                <span class="price margin-l-10">{{list.item_StarBid}}</span>
+                {% else %}
+                <span class="price margin-l-10">{{list.currentPrice}}</span>
+                {% endif %}    
+            <!-- </div> -->
 
             <p>There are {{list.bidNo}} bid(s)</p>
         </div>
