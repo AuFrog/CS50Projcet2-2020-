@@ -14,7 +14,7 @@ from .models import User, Listing, Bid, Comment
 
 
 
-Categories=["Electronics","Fashion","Home","Toys"]
+Categories=["", "Electronics","Fashion","Home","Toys"]
 
 
 class BidForm(forms.Form):
@@ -302,16 +302,30 @@ def watchlist(request):
 
 
 def category(request):
-
+    # print(Categories)
+    # while "" in Categories:
+    #     Categories.remove("")
+    ctgory=[i for i in Categories if i!=""]
     return render(request, "auctions/category.html",{
-        "ctgory":Categories,
+        "ctgory":ctgory,
     })
 
 
 
 def result(request,category):
-    # l_result=Listing.objects.filter(item_Category=category)
-    temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).filter(item_Category=category)
+
+    if category=="0":
+        # __isnull=True means no json
+        # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).filter(item_Category__isnull=True)    
+        # =None specify that the json hase value "null"  
+        # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).filter(item_Category=None)
+
+
+        temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).filter(item_Category="")
+
+
+    else:
+        temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).filter(item_Category=category)
         
     return render(request,"auctions/result.html",{
         "category":category,

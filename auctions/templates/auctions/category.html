@@ -3,9 +3,15 @@
 {% block body %}
 
 <div>
+    <ul>
+        <li><a href="{% url 'result' 0 %}">*Uncategorized</a></li>
+    </ul>
+
     {% for c in ctgory %}
     <ul>
+
         <li><a href="{% url 'result' c %}">{{c}}</a></li>
+    
     </ul>
     {% endfor %}
 </div>    

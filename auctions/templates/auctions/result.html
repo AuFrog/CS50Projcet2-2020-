@@ -3,7 +3,13 @@
 {% block body %}
 
 
-    <div class="box-centre"><h2>Listing in {{category}}</h2></div>
+    <div class="box-centre">
+        {% if category == "0" %}
+        <h2>Uncategorized Listing</h2>
+        {% else %}
+        <h2>Listing in {{category}}</h2>
+        {% endif %}
+    </div>
     
     {% for l in l_result %}
 
