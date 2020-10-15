@@ -247,8 +247,7 @@
             {% endfor %}
         </div>
         
-        <!-- <div id="page-btn"> -->
-        <ul class="pagination" >
+        <ul class="pagination box-centre" >
             {% if page_obj.has_previous %}
             <li class="page-item btn">
                 <a class="page-link" onclick='pre()' href="javascript:void(0)">Previous</a>
@@ -271,18 +270,19 @@
             <li class="page-item disabled btn"><span class="page-link">next</span></li>
             {% endif %}
         </ul>
-        <!-- </div> -->
+    
 
         {% if user.is_authenticated and l.item_isActive == True  %}
         <div>
             <form method="POST" id="CM">
                 {% csrf_token %}
                 {{form_Comment|crispy}}
-            </form>  
+            </form>
         </div>
-
+        
         <button form="CM" type="button" name="com" class="btn btn-outline-success" id="bt" value="com">Submit</button>
-       
+      
+        
    
         {% endif %}
     </div>

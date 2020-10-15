@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core import serializers
 from django.db import IntegrityError
@@ -103,6 +104,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+@login_required(login_url='login')
 def create(request):
 
     if request.method =="POST":
@@ -130,26 +132,20 @@ def listing_Page(request, item_id):
     temp_comment=Comment.objects.filter(com_Listing=item_id).order_by("com_id")
     paginator = Paginator(temp_comment, 2)
     page_obj=paginator.get_page(1)
+    # watched=False
 
 
-
-    # print (request.user.user_Watchlist.filter(item_id__exact=item_id))
-    if request.user.user_Watchlist.filter(item_id__exact=item_id).exists():  
+    if request.user.is_authenticated and request.user.user_Watchlist.filter(item_id__exact=item_id).exists():  
         watched=True
     else:
         watched=False
 
 
-
     message=""
-
 
     
     if request.method=="POST":
-
-        # print(request.POST)
        
-
         if "bid" in request.POST :
 
             temp_bid=BidForm(request.POST)
@@ -159,6 +155,7 @@ def listing_Page(request, item_id):
                 sB=Listing.objects.get(pk=item_id).item_StarBid
                 cB=Bid.objects.filter(bid_Listing=item_id)
 
+
                 if(temp_bid < sB and not cB.exists()) :
                     message="You bid must at least as large as the starting bid"
                 elif (cB.exists() and temp_bid <= cB.last().bid_Bids):
@@ -167,15 +164,7 @@ def listing_Page(request, item_id):
                     b=Bid(bid_Bids=temp_bid, bid_User=request.user, bid_Listing=Listing.objects.get(pk=item_id))
                     b.save()
                     message="Successful bidding"
-                    
-                # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
-                # return render(request,"auctions/listing_Page.html",{
-                #     "l":temp_l,
-                #     "form_Bid":BidForm,
-                #     "message":message,
-                #     "page_obj":page_obj,
-                #     "form_Comment":CommentForm,
-                # })
+
 
         elif "closed" in request.POST:
 
@@ -183,20 +172,12 @@ def listing_Page(request, item_id):
             Listing.objects.filter(pk=item_id).update(item_Winner=Bid.objects.filter(bid_Listing=item_id).last().bid_User)
             message="You listing has beed closed."
             
-            # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)  
-            # return render(request,"auctions/listing_Page.html",{
-            #     "l":temp_l,
-            #     "form_Bid":BidForm,
-            #     "message":message,
-            #     "page_obj":page_obj,
-            #      "form_Comment":CommentForm,
-            # })
 
         elif "watch" in request.POST:
             request.user.user_Watchlist.add(Listing.objects.get(pk=item_id))
-
+            watched=request.user.user_Watchlist.all().annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids"))
             return render(request,"auctions/watchlist.html",{
-                "watched":request.user.user_Watchlist.all()
+                "watched":watched,
             })
 
         elif "unwatch" in request.POST:
@@ -208,7 +189,6 @@ def listing_Page(request, item_id):
         elif "p" in request.POST:
             page=request.POST.get("page")
 
-            # print("page")
             try:
                 page_obj = paginator.page(page)
             except PageNotAnInteger:
@@ -216,13 +196,6 @@ def listing_Page(request, item_id):
             except EmptyPage:
                 page_obj = paginator.page(paginator.num_pages)
 
-            # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
-            # return render(request,"auctions/listing_Page.html",{
-            #     "l":temp_l,
-            #     "form_Bid":BidForm,
-            #     "page_obj":page_obj,
-            #     "form_Comment":CommentForm,
-            # })
 
 
             # data=serializers.serialize('json', page_obj)
@@ -242,13 +215,7 @@ def listing_Page(request, item_id):
             temp_comment=Comment.objects.filter(com_Listing=item_id).order_by("com_id")
             paginator = Paginator(temp_comment, 2)
             page_obj=paginator.get_page(paginator.num_pages)
-            # temp_l=Listing.objects.annotate(currentPrice=Max("bid__bid_Bids"),bidNo=Count("bid__bid_Bids")).get(pk=item_id)
-            # return render(request,"auctions/listing_Page.html",{
-            #     "l":temp_l,
-            #     "form_Bid":BidForm, 
-            #     "page_obj":page_obj,
-            #     "form_Comment":CommentForm,
-            #  })
+
 
         # ************for more post request****************#
         else:
@@ -265,7 +232,6 @@ def listing_Page(request, item_id):
                 "wted":watched,
             })
 
-    
             
     else:
         
@@ -279,7 +245,7 @@ def listing_Page(request, item_id):
         })
 
 
-
+@login_required(login_url='login')
 def watchlist(request):
     if request.method=="POST":
         # print(request.POST)
